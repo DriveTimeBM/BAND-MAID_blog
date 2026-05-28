@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BAND-MAID Blog Archive</title>
+<style>
+  /* ── Core reset & theme ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:          #0a0a0a;
+    --bg-card:     #111111;
+    --bg-raised:   #1a1a1a;
+    --bg-input:    #161616;
+    --border:      rgba(255,255,255,0.08);
+    --border-hi:   rgba(255,255,255,0.18);
+    --accent:      #8b1a2e;      /* deep crimson */
+    --accent-mid:  #b52340;
+    --accent-hi:   #d4375a;
+    --accent-muted:rgba(139,26,46,0.18);
+    --text:        #e8e4df;
+    --text-muted:  #7a756e;
+    --text-dim:    #4a4640;
+    --radius:      6px;
+    --radius-lg:   10px;
+    --ff-body:     'Crimson Pro', Georgia, serif;
+    --ff-ui:       'DM Sans', system-ui, sans-serif;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+  @font-face {
+    font-family: 'BandMaid';
+    src: url('fonts/BAND-MAID.ttf') format('truetype');
+    font-display: swap;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--ff-body);
+    font-size: 17px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .shell {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 1.5rem 1rem;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .site-title {
+    font-family: 'BandMaid', 'DM Sans', sans-serif;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .site-subtitle {
+    font-family: var(--ff-ui);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* ── Controls bar ── */
+  .controls {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 0.65rem 1.5rem;
+  }
+  .controls-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 180px;
+  }
+  .search-wrap svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    pointer-events: none;
+  }
+  input[type=search], select {
+    font-family: var(--ff-ui);
+    font-size: 0.82rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 0.4rem 0.75rem 0.4rem 2.1rem;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  select { padding-left: 0.75rem; cursor: pointer; }
+  input[type=search]:focus, select:focus {
+    border-color: var(--border-hi);
+  }
+  .lang-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-family: var(--ff-ui);
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+  .lang-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 0.38rem 0.7rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1;
+  }
+  .lang-toggle button.active {
+    background: var(--accent);
+    color: #f0dce0;
+  }
+  .sort-label {
+    font-family: var(--ff-ui);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  select.sort-select {
+    padding-left: 0.6rem;
+    min-width: 120px;
+    width: auto;
+  }
+  .count-chip {
+    font-family: var(--ff-ui);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  /* ── Main content ── */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem 4rem;
+    width: 100%;
+  }
+
+  /* ── Author filter chips ── */
+  .author-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+  }
+  .chip {
+    font-family: var(--ff-ui);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.22rem 0.75rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    background: transparent;
+  }
+  .chip:hover { border-color: var(--border-hi); color: var(--text); }
+  .chip.active {
+    background: var(--accent-muted);
+    border-color: var(--accent-mid);
+    color: #e8b8c0;
+  }
+
+  /* ── Post list ── */
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .post-item {
+    background: var(--bg-card);
+    cursor: pointer;
+    transition: background 0.12s;
+    border-bottom: 1px solid var(--border);
+  }
+  .post-item:last-child { border-bottom: none; }
+  .post-item:hover { background: var(--bg-raised); }
+  .post-item.open { background: var(--bg-raised); }
+  .post-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 0.75rem 1rem;
+  }
+  .post-thumb {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: var(--radius);
+    object-fit: cover;
+    background: #1e1e1e;
+    border: 1px solid var(--border);
+  }
+  .post-meta {
+    flex: 1;
+    min-width: 0;
+  }
+  .post-title {
+    font-family: var(--ff-ui);
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .post-title-jp {
+    font-family: var(--ff-body);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .post-byline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.3rem;
+    flex-wrap: wrap;
+  }
+  .post-author {
+    font-family: var(--ff-ui);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-hi);
+  }
+  .post-date {
+    font-family: var(--ff-ui);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+  }
+  .post-expand-icon {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-left: auto;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    align-self: center;
+    font-family: var(--ff-ui);
+  }
+  .post-item.open .post-expand-icon { transform: rotate(180deg); }
+
+  /* ── Post body ── */
+  .post-body {
+    display: none;
+    padding: 0 1rem 1.1rem;
+  }
+  .post-item.open .post-body { display: block; }
+  .post-body-inner {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.5rem;
+  }
+  @media (max-width: 600px) {
+    .post-body-inner { grid-template-columns: 1fr; }
+  }
+  .post-body .body-section { }
+  .body-lang-label {
+    font-family: var(--ff-ui);
+    font-size: 0.63rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 0.35rem;
+  }
+  .body-text {
+    font-family: var(--ff-body);
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--text-muted);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .body-text.hidden { display: none; }
+
+  /* ── Full image (when available) ── */
+  .post-images {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+  .post-images img {
+    max-height: 280px;
+    max-width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    object-fit: contain;
+    background: #0e0e0e;
+  }
+
+  /* ── Wayback link ── */
+  .wayback-link {
+    grid-column: 1 / -1;
+    margin-top: 0.5rem;
+  }
+  .wayback-link a {
+    font-family: var(--ff-ui);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+  }
+  .wayback-link a:hover { color: var(--text-muted); text-decoration: underline; }
+
+  /* ── Empty / loading states ── */
+  .state-msg {
+    font-family: var(--ff-ui);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  /* ── Highlight match ── */
+  mark {
+    background: rgba(212,55,90,0.28);
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <div class="header-inner">
+      <h1 class="site-title">BAND-MaID</h1>
+      <p class="site-subtitle">Ameblo Blog Archive &nbsp;·&nbsp; Translation Archive</p>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="controls-inner">
+      <div class="search-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="search" id="searchInput" placeholder="Search posts…" autocomplete="off" />
+      </div>
+
+      <div class="lang-toggle" role="group" aria-label="Language display">
+        <button id="btnEN" class="active" onclick="setLang('en')">EN</button>
+        <button id="btnJP" onclick="setLang('jp')">JP</button>
+        <button id="btnBoth" onclick="setLang('both')">Both</button>
+      </div>
+
+      <span class="sort-label">Sort</span>
+      <select class="sort-select" id="sortSelect">
+        <option value="asc">Oldest first</option>
+        <option value="desc">Newest first</option>
+      </select>
+
+      <span class="count-chip" id="countChip"></span>
+    </div>
+  </div>
+
+  <main>
+    <div class="author-chips" id="authorChips"></div>
+    <div id="postList">
+      <div class="state-msg">Loading archive…</div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+// ── Config ──────────────────────────────────────────────────────────────────
+const JSON_URL   = 'https://drivetimebm.github.io/BAND-MAID_blog/blog.json';
+const IMAGES_URL = 'https://drivetimebm.github.io/BAND-MAID_blog/images/';
+const FRONT_IMG  = IMAGES_URL + 'front.png';
+
+// ── State ───────────────────────────────────────────────────────────────────
+let allPosts   = [];
+let lang       = 'en';
+let authorFilter = 'all';
+let sortOrder  = 'asc';
+let query      = '';
+let openSlug   = null;
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+async function boot() {
+  try {
+    const r = await fetch(JSON_URL);
+    if (!r.ok) throw new Error(r.status);
+    const raw = await r.json();
+    allPosts = Array.isArray(raw) ? raw : (raw.posts || raw.entries || Object.values(raw));
+    buildAuthorChips();
+    render();
+  } catch(e) {
+    document.getElementById('postList').innerHTML =
+      `<div class="state-msg">Could not load archive. Check JSON_URL in config (currently: <code>${JSON_URL}</code>).<br>Error: ${e.message}</div>`;
+  }
+}
+
+// ── Author chips ─────────────────────────────────────────────────────────────
+function buildAuthorChips() {
+  const authors = [...new Set(allPosts.map(p => p.Author).filter(Boolean))].sort();
+  const wrap = document.getElementById('authorChips');
+  wrap.innerHTML = '';
+
+  const all = chip('All', 'all');
+  all.classList.add('active');
+  wrap.appendChild(all);
+  authors.forEach(a => wrap.appendChild(chip(a, a)));
+
+  function chip(label, value) {
+    const el = document.createElement('button');
+    el.className = 'chip';
+    el.textContent = label;
+    el.dataset.author = value;
+    el.onclick = () => {
+      authorFilter = value;
+      wrap.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.author === value));
+      render();
+    };
+    return el;
+  }
+}
+
+// ── Filter + sort ────────────────────────────────────────────────────────────
+function filtered() {
+  let posts = [...allPosts];
+
+  if (authorFilter !== 'all') posts = posts.filter(p => p.Author === authorFilter);
+
+  if (query) {
+    const q = query.toLowerCase();
+    posts = posts.filter(p =>
+      (p.Title||'').toLowerCase().includes(q) ||
+      (p.ENTitle||'').toLowerCase().includes(q) ||
+      (p.BodyText||'').toLowerCase().includes(q) ||
+      (p.ENBodyText||'').toLowerCase().includes(q)
+    );
+  }
+
+  posts.sort((a, b) => {
+    const da = new Date(a.DatePublished), db = new Date(b.DatePublished);
+    return sortOrder === 'asc' ? da - db : db - da;
+  });
+
+  return posts;
+}
+
+// ── Highlight ────────────────────────────────────────────────────────────────
+function hl(text, q) {
+  if (!q || !text) return escape(text||'');
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return escape(text).replace(new RegExp(escape(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
+    m => `<mark>${m}</mark>`);
+}
+function hlRaw(text, q) {
+  if (!q || !text) return text || '';
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp(escaped, 'gi'), m => `<mark>${m}</mark>`);
+}
+function escape(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function hlEsc(text, q) {
+  if (!q || !text) return escape(text||'');
+  const safe = escape(text);
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return safe.replace(new RegExp(escape(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),'gi'),
+    m=>`<mark>${m}</mark>`);
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  const posts = filtered();
+  const wrap  = document.getElementById('postList');
+  document.getElementById('countChip').textContent =
+    posts.length === allPosts.length ? `${posts.length} posts` : `${posts.length} / ${allPosts.length} posts`;
+
+  if (!posts.length) {
+    wrap.innerHTML = '<div class="state-msg">No posts match your search.</div>';
+    return;
+  }
+
+  wrap.innerHTML = '';
+  const list = document.createElement('div');
+  list.className = 'post-list';
+
+  posts.forEach((post, idx) => {
+    const id = 'p' + idx;
+    const isOpen = openSlug && openSlug === slugFor(post);
+    const hasImages = Array.isArray(post.Images) && post.Images.length > 0;
+    const thumbSrc = hasImages ? IMAGES_URL + post.Images[0] : FRONT_IMG;
+    const dateStr  = post.DatePublished ? post.DatePublished.split(' ')[0] : '';
+
+    const item = document.createElement('div');
+    item.className = 'post-item' + (isOpen ? ' open' : '');
+    item.dataset.slug = slugFor(post);
+
+    // EN/JP visibility for body
+    const showEN   = lang === 'en'   || lang === 'both';
+    const showJP   = lang === 'jp'   || lang === 'both';
+
+    item.innerHTML = `
+      <div class="post-header" onclick="togglePost(this.closest('.post-item'))">
+        <img class="post-thumb" src="${thumbSrc}" alt="" loading="lazy" onerror="this.src='${FRONT_IMG}'">
+        <div class="post-meta">
+          <div class="post-title">${hlEsc(post.ENTitle || post.Title || '(untitled)', query)}</div>
+          ${post.ENTitle && post.Title ? `<div class="post-title-jp">${hlEsc(post.Title, query)}</div>` : ''}
+          <div class="post-byline">
+            ${post.Author ? `<span class="post-author">${escape(post.Author)}</span>` : ''}
+            ${dateStr ? `<span class="post-date">${escape(dateStr)}</span>` : ''}
+          </div>
+        </div>
+        <span class="post-expand-icon" aria-hidden="true">▾</span>
+      </div>
+      <div class="post-body">
+        <div class="post-body-inner">
+          ${showEN && post.ENBodyText ? `
+            <div class="body-section">
+              <div class="body-lang-label">English</div>
+              <div class="body-text">${hlEsc(post.ENBodyText, query)}</div>
+            </div>` : ''}
+          ${showJP && post.BodyText ? `
+            <div class="body-section">
+              <div class="body-lang-label">Japanese</div>
+              <div class="body-text">${hlEsc(post.BodyText, query)}</div>
+            </div>` : ''}
+          ${hasImages ? `
+            <div class="post-images">
+              ${post.Images.map(img =>
+                `<img src="${IMAGES_URL}${img}" alt="" loading="lazy" onerror="this.remove()">`
+              ).join('')}
+            </div>` : ''}
+          ${post.ArchiveUrl ? `
+            <div class="wayback-link">
+              <a href="${post.ArchiveUrl}" target="_blank" rel="noopener">↗ View on Wayback Machine</a>
+            </div>` : ''}
+        </div>
+      </div>`;
+
+    list.appendChild(item);
+  });
+
+  wrap.appendChild(list);
+}
+
+function slugFor(post) {
+  return (post.OriginalUrl || post.DatePublished || '').replace(/[^a-z0-9]/gi, '_');
+}
+
+function togglePost(el) {
+  const wasOpen = el.classList.contains('open');
+  el.classList.toggle('open', !wasOpen);
+  openSlug = wasOpen ? null : el.dataset.slug;
+}
+
+// ── Controls ─────────────────────────────────────────────────────────────────
+function setLang(l) {
+  lang = l;
+  document.getElementById('btnEN').classList.toggle('active', l === 'en');
+  document.getElementById('btnJP').classList.toggle('active', l === 'jp');
+  document.getElementById('btnBoth').classList.toggle('active', l === 'both');
+  render();
+}
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  query = this.value.trim();
+  render();
+});
+
+document.getElementById('sortSelect').addEventListener('change', function() {
+  sortOrder = this.value;
+  render();
+});
+
+boot();
+</script>
+</body>
+</html>
